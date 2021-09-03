@@ -3,7 +3,7 @@
 ```
 go get -u github.com/hellojukay/prxyc
 ```
-
+![demo](demo.png)
 # usage
 ```
 hellojukay@local prxy (main) $ prxyc -h
@@ -23,3 +23,4 @@ Usage of prxyc:
   -url string
         the website you want to check (default "https://google.com")
 ```
+
