@@ -20,6 +20,7 @@ func main() {
 	var proxy_type = flag.String("proxy", "http", "the proxy type [sock4,sock5,http]")
 	var input = flag.String("input", "", "input file with proxy line by line")
 	var from_url = flag.String("from-url", "https://raw.githubusercontent.com/TheSpeedX/SOCKS-List/master/http.txt", "input from url")
+	var ignore_time = flag.Bool("ignore-timeout", true, "ingore timeout proxy server")
 	flag.Parse()
 	if *thread < 2 {
 		fmt.Fprint(os.Stderr, "thread number too small")
@@ -69,9 +70,11 @@ func main() {
 			}()
 			use, err := with_proxy(*proxy_type, server, *url, time.Second*time.Duration(2), check)
 			if err != nil {
-				lock.Lock()
-				fmt.Fprint(os.Stderr, with_color(fmt.Sprintf("%-25s TIMEOUT\n", server), RED))
-				lock.Unlock()
+				if !*ignore_time {
+					lock.Lock()
+					fmt.Fprint(os.Stderr, with_color(fmt.Sprintf("%-25s TIMEOUT\n", server), RED))
+					lock.Unlock()
+				}
 				return
 			}
 			var t = float64(use) / float64(int64(time.Millisecond))
@@ -145,8 +148,8 @@ func check(link string, timeout time.Duration) (time.Duration, error) {
 	}
 	req.Header.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36")
 	defer req.Body.Close()
-	io.Copy(io.Discard, req.Body)
-	return time.Now().Sub(start), nil
+	_, err = io.Copy(io.Discard, req.Body)
+	return time.Now().Sub(start), err
 }
 
 func with_color(str string, c Color) string {
