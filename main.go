@@ -21,7 +21,9 @@ func main() {
 	var input = flag.String("input", "", "input file with proxy line by line")
 	var from_url = flag.String("from-url", "https://raw.githubusercontent.com/TheSpeedX/SOCKS-List/master/http.txt", "input from url")
 	var ignore_time = flag.Bool("ignore-timeout", true, "ingore timeout proxy server")
+
 	flag.Parse()
+
 	if *thread < 2 {
 		fmt.Fprint(os.Stderr, "thread number too small")
 		os.Exit(1)
@@ -33,6 +35,7 @@ func main() {
 	if *input != "" && *from_url != "" {
 		fmt.Fprint(os.Stderr, "flag '--input' conflict with '--from-url'")
 	}
+
 	var proxys []string
 	var err error
 	if *from_url != "" {
@@ -54,6 +57,7 @@ func main() {
 		log.Print(err)
 		os.Exit(1)
 	}
+
 	os.Unsetenv("https_proxy")
 	os.Unsetenv("http_proxy")
 
@@ -63,7 +67,7 @@ func main() {
 	for _, proxy := range proxys {
 		wg.Add(1)
 		limit <- 1
-		func(server string) {
+		go func(server string) {
 			defer wg.Done()
 			defer func() {
 				<-limit
@@ -106,6 +110,7 @@ func from_remote(link string) (io.ReadCloser, error) {
 func from_file(file string) (io.ReadCloser, error) {
 	return os.Open(file)
 }
+
 func read_proxys(input io.ReadCloser) (proxys []string, err error) {
 	defer input.Close()
 	buffer, err := ioutil.ReadAll(input)
@@ -137,6 +142,7 @@ func with_proxy(proxy_type string, proxy string, url string, timeout time.Durati
 	}
 	return check(url, timeout)
 }
+
 func check(link string, timeout time.Duration) (time.Duration, error) {
 	var start = time.Now()
 	client := &http.Client{
