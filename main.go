@@ -60,6 +60,9 @@ func main() {
 
 	os.Unsetenv("https_proxy")
 	os.Unsetenv("http_proxy")
+	os.Unsetenv("HTTP_PROXY")
+	os.Unsetenv("HTTPS_PROXY")
+	os.Unsetenv("ALL_PROXY")
 
 	var limit = make(chan int, *thread)
 	var wg sync.WaitGroup
@@ -103,6 +106,9 @@ func from_remote(link string) (io.ReadCloser, error) {
 	res, err := http.Get(link)
 	if err != nil {
 		return nil, err
+	}
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("%s", res.Status)
 	}
 	return res.Body, nil
 }
